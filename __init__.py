@@ -16,13 +16,26 @@ __version__ = "0.0.1"
 from .src.comfytts.nodes import Example
 from .src.comfytts.LoadBarkModel import LoadBarkModel
 from .src.comfytts.TextToSpeech import TextToSpeech
+from .src.comfytts.AudioCombine import AudioCombine
+from .src.comfytts.AudioSpeedShift import AudioSpeedShift
+
 
 # A dictionary that contains all nodes you want to export with their names
 # NOTE: names should be globally unique
-NODE_CLASS_MAPPINGS = {"Example": Example, "LoadBarkModel": LoadBarkModel, "TextToSpeech": TextToSpeech}
+NODE_CLASS_MAPPINGS = {"Example": Example,
+                       "LoadBarkModel": LoadBarkModel,
+                       "TextToSpeech": TextToSpeech,
+                       "AudioCombine": AudioCombine,
+                       "AudioSpeedShift": AudioSpeedShift,
+                       }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
-NODE_DISPLAY_NAME_MAPPINGS = {"Example": "Example Node", "LoadBarkModel": "Load Bark Model", "TextToSpeech": "Text To Speech"}
+NODE_DISPLAY_NAME_MAPPINGS = {"Example": "Example Node",
+                              "LoadBarkModel": "Load Bark Model",
+                              "TextToSpeech": "Text To Speech",
+                              "AudioCombine": "Audio Combine",
+                              "AudioSpeedShift": "Audio Speed Shift",
+                              }
 
 
 WEB_DIRECTORY = "./web"
