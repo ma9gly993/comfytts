@@ -3,6 +3,7 @@ import math
 import torchaudio.functional as F
 from typing import Tuple
 
+import comfy.model_management
 from ._types import AUDIO
 
 
@@ -59,6 +60,8 @@ class AudioSpeedShift:
             torch.Tensor: Time-domain output of same shape/type as input [channels, frames]
 
         """
+        device: torch.device = comfy.model_management.get_torch_device()
+
         if hop_size is None:
             hop_size = fft_size // 4
         if win_length is None:
@@ -89,6 +92,9 @@ class AudioSpeedShift:
                 ..., None
             ]  # shape: [freq, 1]
 
+            complex_spectogram = complex_spectogram.to(device)
+            phase_advance = phase_advance.to(device)
+
             stretched_spectogram = F.phase_vocoder(
                 complex_spectogram, rate, phase_advance
             )  # shape: [channels, freq, stretched_time]
@@ -98,6 +104,8 @@ class AudioSpeedShift:
                 abs(stretched_spectogram.shape[2] - expected_time) < 3
             ), f"Expected Time: {expected_time}, Stretched Time: {stretched_spectogram.shape[2]}"
 
+            stretched_spectogram = stretched_spectogram.to(device)
+            window = window.to(device)
             # Convert back to time basis with inverse STFT
             return torch.istft(
                 stretched_spectogram,
@@ -105,4 +113,4 @@ class AudioSpeedShift:
                 hop_length=hop_size,
                 win_length=win_length,
                 window=window,
-            )  # shape: [channels, frames]
+            ).cpu()  # shape: [channels, frames]

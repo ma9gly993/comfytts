@@ -111,7 +111,7 @@ class AudioCombine:
 
         return (
             {
-                "waveform": waveform,
+                "waveform": waveform.cpu(),
                 "sample_rate": output_sample_rate,
             },
         )

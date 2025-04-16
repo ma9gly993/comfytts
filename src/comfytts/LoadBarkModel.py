@@ -1,9 +1,10 @@
+# import libs
 import os
-from transformers import AutoProcessor, BarkModel
-
+# import comfy dependencies
 import folder_paths
 import comfy.model_management as model_management
-
+# import custom bark
+from .BARK_REPO.generation import preload_models
 
 # set the models directory
 if "comfytts_barkmodel" not in folder_paths.folder_names_and_paths:
@@ -37,28 +38,6 @@ class LoadBarkModel:
 
 
     def load_models(self):
-        os.environ["HF_HUB_ENABLE_PROGRESS_BAR"] = "1"
-        required_files = [
-            "config.json",
-            "pytorch_model.bin",
-            "tokenizer.json"
-        ]
-        model_files_exist = all(os.path.exists(os.path.join(model_path, f)) for f in required_files)
-        if model_files_exist:
-            print(f"✅ Load Bark local from {model_path}")
-            return self.load_model_local()
-        else:
-            print(f"⏬ Can't find Bark in path {model_path}. Start Loading weights from HF... This may take a very long time.")
-            return self.load_model_HF()
+        preload_models()
+        return ('model', )
 
-    def load_model_local(self):
-        torch_device = model_management.get_torch_device()
-        processor = AutoProcessor.from_pretrained(model_path)
-        model = BarkModel.from_pretrained(model_path).to(torch_device)
-        return (model, processor, )
-
-    def load_model_HF(self):
-        torch_device = model_management.get_torch_device()
-        processor = AutoProcessor.from_pretrained("suno/bark", cache_dir=model_path)
-        model = BarkModel.from_pretrained("suno/bark", cache_dir=model_path).to(torch_device)
-        return (model, processor, )

@@ -18,6 +18,10 @@ from .src.comfytts.LoadBarkModel import LoadBarkModel
 from .src.comfytts.TextToSpeech import TextToSpeech
 from .src.comfytts.AudioCombine import AudioCombine
 from .src.comfytts.AudioSpeedShift import AudioSpeedShift
+from .src.comfytts.AudioNormalize import AudioNormalize
+from .src.comfytts.ChatGPT_api import ChatGPT_api
+from .src.comfytts.TTS_ElevenLabs_api import TTS_ElevenLabs_api
+
 
 
 # A dictionary that contains all nodes you want to export with their names
@@ -27,6 +31,9 @@ NODE_CLASS_MAPPINGS = {"Example": Example,
                        "TextToSpeech": TextToSpeech,
                        "AudioCombine": AudioCombine,
                        "AudioSpeedShift": AudioSpeedShift,
+                       "AudioNormalize": AudioNormalize,
+                       "ChatGPTApi": ChatGPT_api,
+                       "TTS_ElevenLabs_api": TTS_ElevenLabs_api
                        }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -35,6 +42,9 @@ NODE_DISPLAY_NAME_MAPPINGS = {"Example": "Example Node",
                               "TextToSpeech": "Text To Speech",
                               "AudioCombine": "Audio Combine",
                               "AudioSpeedShift": "Audio Speed Shift",
+                              "AudioNormalize": "Audio Normalize",
+                              "ChatGPTApi": "Chat GPT (api)",
+                              "TTS_ElevenLabs_api": "Text-To-Speech(TTS) ElevenLabs"
                               }
 
 

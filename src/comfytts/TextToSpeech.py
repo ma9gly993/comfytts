@@ -1,12 +1,16 @@
 import numpy as np
 import torch
 import os
-import scipy
-from transformers import BarkModel
+import nltk
 
 import comfy.model_management as model_management
 import folder_paths
 
+from .BARK_REPO.generation import generate_text_semantic, SAMPLE_RATE
+from .BARK_REPO.api import semantic_to_waveform
+
+# GEN_TEMP = 0.6
+# silence = np.zeros(int(0.25 * SAMPLE_RATE))  # quarter second of silence
 
 # set the models directory
 if "comfytts_voicesamples" not in folder_paths.folder_names_and_paths:
@@ -25,8 +29,38 @@ class TextToSpeech:
         return {
             "required": {
                 "model": ("MODEL", {"tooltip": ""}),
-                "data_processor": ("DATA_PROCESSOR", {"tooltip": ""}),
+                # "data_processor": ("DATA_PROCESSOR", {"tooltip": ""}),
                 "voice_preset": (folder_paths.get_filename_list("comfytts_voicesamples"),),
+
+            },
+            "optional": {
+                "text_splitting": (
+                    ["every line", "auto"],
+                    {
+                        "default": "auto",
+                        "tooltip": "The method used to split text into sentences.",
+                    },
+                ),
+                "temperature": (
+                    "FLOAT",
+                    {
+                        "default": 0.6,
+                        "min": 0.0,
+                        "max": 1.5,
+                        "step": 0.01,
+                        "tooltip": "temperature for generation audio",
+                    },
+                ),
+                "silence_time": (
+                    "FLOAT",
+                    {
+                        "default": 0.25,
+                        "min": 0.0,
+                        "max": 1.0,
+                        "step": 0.01,
+                        "tooltip": "Silence after each sentence",
+                    },
+                ),
                 "text": (
                     "STRING",
                     {
@@ -34,7 +68,8 @@ class TextToSpeech:
                         "default": "Hello World!",
                     },
                 ),
-            },
+
+            }
         }
 
     RETURN_TYPES = ("AUDIO",)
@@ -42,40 +77,50 @@ class TextToSpeech:
     FUNCTION = "inference"
     CATEGORY = "comfytts"
 
-    def inference(self, model, data_processor, voice_preset, text):
+    def inference(self, model, voice_preset, text, text_splitting, temperature, silence_time):
         voices_path, _ = folder_paths.folder_names_and_paths["comfytts_voicesamples"]
         voice_preset_path = os.path.join(voices_path[0], voice_preset)
         try:
-            if isinstance(model, BarkModel):
-                return self.inferenceBarkModel(model, data_processor, voice_preset_path, text)
+            return self.inferenceBarkModel(model, voice_preset_path, text, text_splitting, temperature, silence_time)
         except Exception as e:
             raise Exception(f"Error with model {e}")
 
+    # TODO: AudioNormalize to 0.99
+    # TODO: Load Models not from preload_models() -> model return
+    # TODO: в Load Bark Model выбрать какую модель загружать (Large, Small, v2 или v1)
+    # TODO: также проверить, что она грузится как с HF норм (автоматом), так и из папки
+    # TODO: зафиксировать сид как параметр (оч сильно отличаются генерации)
 
     @torch.inference_mode()
-    def inferenceBarkModel(self, model, data_processor, voice_preset_path, text):
-        print("✅ Start inference with Bark")
-        inputs = data_processor(text, voice_preset=voice_preset_path)
-        torch_device = model_management.get_torch_device()
-        inputs = {key: value.to(torch_device) for key, value in inputs.items()}
-        audio_array = model.generate(**inputs)
-        audio_array = audio_array.cpu().numpy().squeeze()
+    def inferenceBarkModel(self, model, voice_preset_path, text, text_splitting, temperature, silence_time):
+        if text_splitting == "auto":
+            text = text.replace("\n", " ").strip()
+            sentences = nltk.sent_tokenize(text)
+        elif text_splitting == "every line":
+            sentences = text.strip().split('\n')
+            sentences = [sentence.strip() for sentence in sentences if sentence.strip()]
 
-        sample_rate = model.generation_config.sample_rate
+        silence = np.zeros(int(silence_time * SAMPLE_RATE))
+        pieces = []
+        for sentence in sentences:
+            print("sentence: ", sentence)
+            semantic_tokens = generate_text_semantic(
+                sentence,
+                history_prompt_path=voice_preset_path,
+                temp=temperature,
+                min_eos_p=0.05,  # this controls how likely the generation is to end
+            )
 
-        # Ensure audio is float32
-        if audio_array.dtype != np.float32:
-            audio_array = audio_array.astype(np.float32)
+            audio_array = semantic_to_waveform(semantic_tokens, history_prompt=voice_preset_path, )
+            pieces += [audio_array, silence.copy()]
 
-        # Ensure shape is (batch, channels, samples)
-        if audio_array.ndim == 1:
-            audio_tensor = torch.from_numpy(audio_array).unsqueeze(0).unsqueeze(0)  # Add channels dim -> (1, 1, samples)
-        else:
-            raise ValueError(f"Unexpected audio array shape: {audio_array.shape}")
+        # ComfyUI
+        full_audio = np.concatenate(pieces)
+        full_audio = np.clip(full_audio, -1.0, 1.0)
+        if full_audio.dtype != np.float32:
+            full_audio = full_audio.astype(np.float32)
+        audio_tensor = torch.from_numpy(full_audio).unsqueeze(0).unsqueeze(0)
+        print(f"✅ Final audio tensor shape: {audio_tensor.shape}")
 
-        print("✅ End inference with Bark! shape_audio: ", audio_tensor.shape)
-
-        torch.cuda.empty_cache()
-        return ({"waveform": audio_tensor, "sample_rate": sample_rate},)
-
+        return ({"waveform": audio_tensor.cpu(), "sample_rate": SAMPLE_RATE},)
 

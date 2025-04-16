@@ -1,5 +1,18 @@
-scipy
+boto3
+encodec
+funcy
 transformers
-# torch
-# torchaudio
 numpy
+scipy
+huggingface-hub
+tokenizers
+tqdm
+torch
+torchaudio
+nltk
+openai
+httpx
+httpx[socks]
+socksio
+elevenlabs
+openai
