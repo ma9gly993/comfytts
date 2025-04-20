@@ -21,6 +21,7 @@ from .src.comfytts.AudioSpeedShift import AudioSpeedShift
 from .src.comfytts.AudioNormalize import AudioNormalize
 from .src.comfytts.ChatGPT_api import ChatGPT_api
 from .src.comfytts.TTS_ElevenLabs_api import TTS_ElevenLabs_api
+from .src.comfytts.GetTimeAudio import GetTimeAudio
 
 
 
@@ -33,7 +34,8 @@ NODE_CLASS_MAPPINGS = {"Example": Example,
                        "AudioSpeedShift": AudioSpeedShift,
                        "AudioNormalize": AudioNormalize,
                        "ChatGPTApi": ChatGPT_api,
-                       "TTS_ElevenLabs_api": TTS_ElevenLabs_api
+                       "TTS_ElevenLabs_api": TTS_ElevenLabs_api,
+                       "GetTimeAudio": GetTimeAudio
                        }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -44,8 +46,8 @@ NODE_DISPLAY_NAME_MAPPINGS = {"Example": "Example Node",
                               "AudioSpeedShift": "Audio Speed Shift",
                               "AudioNormalize": "Audio Normalize",
                               "ChatGPTApi": "Chat GPT (api)",
-                              "TTS_ElevenLabs_api": "Text-To-Speech(TTS) ElevenLabs"
+                              "TTS_ElevenLabs_api": "Text-To-Speech(TTS) ElevenLabs",
+                              "GetTimeAudio": "Get Time Audio",
                               }
-
 
 WEB_DIRECTORY = "./web"
