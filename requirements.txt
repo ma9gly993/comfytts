@@ -16,3 +16,4 @@ httpx[socks]
 socksio
 elevenlabs
 openai
+opencv-python
