@@ -22,6 +22,7 @@ from .src.comfytts.AudioNormalize import AudioNormalize
 from .src.comfytts.ChatGPT_api import ChatGPT_api
 from .src.comfytts.TTS_ElevenLabs_api import TTS_ElevenLabs_api
 from .src.comfytts.GetTimeAudio import GetTimeAudio
+from .src.comfytts.ApplyVideoEffect import ApplyVideoEffect
 
 
 
@@ -35,7 +36,8 @@ NODE_CLASS_MAPPINGS = {"Example": Example,
                        "AudioNormalize": AudioNormalize,
                        "ChatGPTApi": ChatGPT_api,
                        "TTS_ElevenLabs_api": TTS_ElevenLabs_api,
-                       "GetTimeAudio": GetTimeAudio
+                       "GetTimeAudio": GetTimeAudio,
+                       "ApplyVideoEffect": ApplyVideoEffect
                        }
 
 # A dictionary that contains the friendly/humanly readable titles for the nodes
@@ -48,6 +50,7 @@ NODE_DISPLAY_NAME_MAPPINGS = {"Example": "Example Node",
                               "ChatGPTApi": "Chat GPT (api)",
                               "TTS_ElevenLabs_api": "Text-To-Speech(TTS) ElevenLabs",
                               "GetTimeAudio": "Get Time Audio",
+                              "ApplyVideoEffect": "Apply Effect to Video"
                               }
 
 WEB_DIRECTORY = "./web"
